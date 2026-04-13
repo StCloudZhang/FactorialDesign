@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two-Way Factorial ANOVA — Conditional CIs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface2: #f9f8f6;
+    --border: #e3dfd8;
+    --border2: #cdc9c1;
+    --text: #1a1916;
+    --text2: #6b6760;
+    --text3: #9b9892;
+    --accent: #2d5a3d;
+    --accent-light: #e8f0eb;
+    --accent2: #8b4513;
+    --accent2-light: #f5ede6;
+    --danger: #b33a2a;
+    --danger-light: #fdf0ee;
+    --info: #1d4e7a;
+    --info-light: #edf3f9;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--text);
+    color: #f5f3ef;
+    padding: 28px 40px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -60px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    border: 1px solid rgba(245,243,239,0.08);
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: 60px; top: -20px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    border: 1px solid rgba(245,243,239,0.06);
+  }
+  .header-label {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 8px;
+    font-family: var(--mono);
+  }
+  header h1 {
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  header h1 span { font-weight: 500; }
+  .header-formula {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    opacity: 0.45;
+    font-style: italic;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 100px);
+  }
+
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    position: sticky;
+    top: 0;
+    height: fit-content;
+  }
+
+  .main {
+    padding: 24px 28px;
+    min-width: 0;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+    font-family: var(--mono);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group label {
+    display: block;
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 5px;
+    font-family: var(--mono);
+  }
+
+  .field-row { display: flex; gap: 10px; }
+  .field-row > div { flex: 1; }
+
+  input[type=number], input[type=text] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  input[type=number]:focus, input[type=text]:focus {
+    border-color: var(--accent);
+    background: #fff;
+  }
+  input[type=number] { width: 100%; }
+
+  .data-input {
+    width: 64px !important;
+    text-align: center;
+    padding: 5px 4px;
+    font-size: 12px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .btn:hover { background: var(--surface2); border-color: var(--border2); }
+
+  .btn-primary {
+    background: var(--text);
+    color: #f5f3ef;
+    border-color: var(--text);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: #2e2c29; border-color: #2e2c29; }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+  .btn-accent:hover { background: #234a31; }
+
+  .data-wrap {
+    margin-top: 14px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    text-align: right;
+    padding: 8px 10px;
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+  }
+  th:first-child, td:first-child { text-align: left; }
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-family: var(--mono);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-head-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+    color: var(--text2);
+  }
+  .card-body { padding: 18px; }
+
+  .stat-chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    background: var(--surface2);
+  }
+
+  .sig { color: var(--danger); font-weight: 500; }
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-weight: 500;
+  }
+  .badge-sig { background: var(--danger-light); color: var(--danger); border: 1px solid #f0c4bc; }
+  .badge-ns { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+  .decision-box {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    border-left: 3px solid;
+  }
+  .decision-sig { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .decision-ns { background: var(--info-light); border-color: var(--info); color: var(--info); }
+
+  .ci-info {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    line-height: 1.8;
+  }
+
+  .group-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+    color: var(--text3);
+    margin: 14px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ci-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 5px;
+    background: var(--surface);
+    flex-wrap: wrap;
+  }
+  .ci-row:hover { background: var(--surface2); }
+  .ci-label { font-family: var(--mono); font-size: 12px; font-weight: 500; min-width: 120px; }
+  .ci-diff { font-family: var(--mono); font-size: 12px; color: var(--text); min-width: 72px; text-align: right; }
+  .ci-interval { font-family: var(--mono); font-size: 11px; color: var(--text2); min-width: 170px; }
+  .ci-bar-wrap { flex: 1; min-width: 100px; height: 16px; position: relative; }
+  .ci-track { position: absolute; top: 7px; left: 0; right: 0; height: 1px; background: var(--border2); }
+  .ci-fill { position: absolute; top: 5px; height: 5px; border-radius: 2px; background: var(--accent); opacity: 0.35; }
+  .ci-fill-sig { background: var(--accent); opacity: 0.6; }
+  .ci-tick { position: absolute; top: 2px; width: 2px; height: 11px; border-radius: 1px; background: var(--text); }
+  .ci-zero { position: absolute; top: 0; width: 1px; height: 16px; background: var(--border2); }
+
+  .cell-table th { text-align: center; }
+  .cell-table td { text-align: center; }
+  .cell-table td:first-child { text-align: left; font-weight: 500; }
+  .cell-table .marg { font-weight: 500; background: var(--surface2); }
+
+  #results { display: none; }
+
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; border-right: none; border-bottom: 1px solid var(--border); }
+    header { padding: 20px 20px 18px; }
+    .main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Statistical Analysis</div>
+  <h1>Two-Way Factorial ANOVA<br><span>+ Conditional Confidence Intervals</span></h1>
+  <div class="header-formula">Y<sub>ijk</sub> = μ + α<sub>i</sub> + β<sub>j</sub> + (αβ)<sub>ij</sub> + ε<sub>ijk</sub> &nbsp;|&nbsp; p-values via exact F-distribution</div>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="panel-title">Design Setup</div>
+
+    <div class="field-group">
+      <div class="field-row">
+        <div><label>Factor A levels (a)</label><input type="number" id="aLev" value="3" min="2" max="6"></div>
+        <div><label>Factor B levels (b)</label><input type="number" id="bLev" value="2" min="2" max="6"></div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Replicates per cell (n)</label>
+      <input type="number" id="nRep" value="3" min="2" max="10">
+    </div>
+
+    <button class="btn" onclick="buildTable()">&#8635; Build / refresh table</button>
+    <button class="btn" onclick="loadExampleNoInt()">&#9654; Example: no interaction</button>
+    <button class="btn" onclick="loadExampleInt()">&#9654; Example: interaction present</button>
+    <button class="btn btn-accent" onclick="compute()">&#10003; Compute ANOVA + CIs</button>
+
+    <div id="dataArea" style="margin-top:12px"></div>
+  </div>
+
+  <div class="main">
+    <div id="results">
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">ANOVA Table</span>
+          <span id="designBadge" class="stat-chip"></span>
+        </div>
+        <div class="card-body">
+          <div id="anovaOut"></div>
+          <div id="anovaFooter" style="margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--text3)"></div>
+        </div>
+      </div>
+
+      <div id="decisionBox" class="decision-box"></div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-head-title">Cell Means &amp; Marginal Means</span></div>
+        <div class="card-body"><div id="cellMeansOut"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title" id="ciHead">Confidence Intervals for Mean Differences</span>
+        </div>
+        <div class="card-body">
+          <div class="ci-info" id="ciInfo"></div>
+          <div id="ciOut"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:var(--text3);text-align:center">
+      <div style="font-size:40px;margin-bottom:12px;opacity:0.3">&#9638;</div>
+      <div style="font-family:var(--mono);font-size:12px">Configure design and click <strong>Compute ANOVA + CIs</strong></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let a=3, b=2, n=3;
+let D=[], Anames=[], Bnames=[];
+
+/* ── Incomplete beta / exact p-value ── */
+function lnG(z){
+  const p=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  if(z<0.5) return Math.log(Math.PI)-Math.log(Math.sin(Math.PI*z))-lnG(1-z);
+  z-=1; let x=p[0];
+  for(let i=1;i<9;i++) x+=p[i]/(z+i);
+  let t=z+7.5;
+  return Math.log(2*Math.PI)/2+(z+0.5)*Math.log(t)-t+Math.log(x);
+}
+function betainc(x,aa,bb){
+  if(x<=0) return 0; if(x>=1) return 1;
+  let bt=Math.exp(lnG(aa+bb)-lnG(aa)-lnG(bb)+aa*Math.log(x)+bb*Math.log(1-x));
+  function cf(x,aa,bb){
+    let eps=1e-12,h=1,c=1,d=1-((aa+bb)*x/(aa+1));
+    if(Math.abs(d)<eps)d=eps; d=1/d; h=d;
+    for(let m=1;m<=200;m++){
+      let m2=2*m;
+      let A=m*(bb-m)*x/((aa-1+m2)*(aa+m2));
+      d=1+A*d; if(Math.abs(d)<eps)d=eps; c=1+A/c; if(Math.abs(c)<eps)c=eps; d=1/d; h*=d*c;
+      A=-(aa+m)*(aa+bb+m)*x/((aa+m2)*(aa+1+m2));
+      d=1+A*d; if(Math.abs(d)<eps)d=eps; c=1+A/c; if(Math.abs(c)<eps)c=eps; d=1/d;
+      let del=d*c; h*=del;
+      if(Math.abs(del-1)<eps) break;
+    }
+    return h;
+  }
+  if(x<(aa+1)/(aa+bb+2)) return bt*cf(x,aa,bb)/aa;
+  return 1-bt*cf(1-x,bb,aa)/bb;
+}
+function fPval(F,d1,d2){
+  if(F<=0||d1<=0||d2<=0) return 1;
+  // p = P(F_rv > F_obs) = 1 - I_x(d1/2, d2/2), where x = d1*F/(d1*F+d2)
+  let x=d1*F/(d1*F+d2);
+  return 1-betainc(x,d1/2,d2/2);
+}
+
+/* ── t critical value ── */
+const tTbl={1:12.706,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228,
+  11:2.201,12:2.179,13:2.16,14:2.145,15:2.131,16:2.12,17:2.11,18:2.101,19:2.093,20:2.086,
+  22:2.074,24:2.064,26:2.056,28:2.048,30:2.042,35:2.03,40:2.021,45:2.014,50:2.009,60:2,
+  70:1.994,80:1.99,90:1.987,100:1.984,120:1.98,150:1.976,200:1.972,300:1.968,500:1.965,1000:1.962};
+function tCrit(df){
+  if(df<=0) return 1.96;
+  if(tTbl[df]) return tTbl[df];
+  let keys=Object.keys(tTbl).map(Number).sort((x,y)=>x-y);
+  if(df>=keys[keys.length-1]) return 1.96;
+  for(let i=0;i<keys.length-1;i++){
+    if(df>=keys[i]&&df<=keys[i+1]){
+      let t1=tTbl[keys[i]],t2=tTbl[keys[i+1]];
+      return t1+(t2-t1)*(df-keys[i])/(keys[i+1]-keys[i]);
+    }
+  }
+  return 1.96;
+}
+
+function fmt(v,d=3){ return (+v).toFixed(d); }
+function pStr(p){ return p<0.0001?"&lt;.0001":fmt(p,4); }
+
+/* ── Build / refresh ── */
+function buildTable(preset){
+  a=Math.max(2,Math.min(6,+document.getElementById("aLev").value||3));
+  b=Math.max(2,Math.min(6,+document.getElementById("bLev").value||2));
+  n=Math.max(2,Math.min(10,+document.getElementById("nRep").value||3));
+  document.getElementById("aLev").value=a;
+  document.getElementById("bLev").value=b;
+  document.getElementById("nRep").value=n;
+  if(!preset){
+    D=[];
+    for(let i=0;i<a;i++){D.push([]);for(let j=0;j<b;j++){D[i].push([]);for(let r=0;r<n;r++)D[i][j].push(0);}}
+    Anames=Array.from({length:a},(_,i)=>`A${i+1}`);
+    Bnames=Array.from({length:b},(_,i)=>`B${i+1}`);
+  }
+  renderTable();
+  document.getElementById("results").style.display="none";
+  document.getElementById("placeholder").style.display="flex";
+}
+
+function renderTable(){
+  let html=`<div class="data-wrap"><table><thead><tr>
+    <th style="text-align:left">A</th><th style="text-align:left">B</th>`;
+  for(let r=0;r<n;r++) html+=`<th>r${r+1}</th>`;
+  html+=`</tr></thead><tbody>`;
+  for(let i=0;i<a;i++) for(let j=0;j<b;j++){
+    html+=`<tr><td style="text-align:left;font-weight:500">${Anames[i]}</td>
+               <td style="text-align:left;color:var(--text2)">${Bnames[j]}</td>`;
+    for(let r=0;r<n;r++)
+      html+=`<td><input class="data-input" type="number" step="any" value="${D[i][j][r]}"
+                  onchange="D[${i}][${j}][${r}]=+this.value"></td>`;
+    html+=`</tr>`;
+  }
+  html+=`</tbody></table></div>`;
+  document.getElementById("dataArea").innerHTML=html;
+}
+
+/* ── Examples ── */
+// No interaction: treatment adds a constant +4 across all A levels → parallel profiles
+function loadExampleNoInt(){
+  document.getElementById("aLev").value=3;
+  document.getElementById("bLev").value=2;
+  document.getElementById("nRep").value=4;
+  a=3; b=2; n=4;
+  Anames=["Low","Med","High"];
+  Bnames=["Control","Treat"];
+  D=[
+    [[10,11,9,10],  [14,15,13,14]],
+    [[20,19,21,20], [24,23,25,24]],
+    [[30,31,29,30], [34,35,33,34]]
+  ];
+  buildTable(true);
+  setTimeout(compute,60);
+}
+
+// Interaction present: treatment helps at Low dose, hurts at High dose → crossing profiles
+function loadExampleInt(){
+  document.getElementById("aLev").value=3;
+  document.getElementById("bLev").value=2;
+  document.getElementById("nRep").value=4;
+  a=3; b=2; n=4;
+  Anames=["Low","Med","High"];
+  Bnames=["Control","Treat"];
+  D=[
+    [[10,11,9,10],  [22,23,21,22]],
+    [[20,19,21,20], [21,20,22,21]],
+    [[30,31,29,30], [18,19,17,18]]
+  ];
+  buildTable(true);
+  setTimeout(compute,60);
+}
+
+/* ── CI bar renderer ── */
+function ciRow(label, diff, lo, hi){
+  let sig = (lo>0)||(hi<0);
+  let span = Math.max(hi-lo, 0.0001);
+  let zeroFrac = Math.max(0, Math.min(1, -lo/span));
+  let diffFrac = Math.max(0, Math.min(1, (diff-lo)/span));
+  let fillL = Math.min(zeroFrac,diffFrac)*100;
+  let fillW = Math.abs(diffFrac-zeroFrac)*100;
+  return `<div class="ci-row">
+    <span class="ci-label">${label}</span>
+    <span class="ci-diff">${fmt(diff)}</span>
+    <span class="ci-interval">(${fmt(lo)}, ${fmt(hi)})</span>
+    <div class="ci-bar-wrap">
+      <div class="ci-track"></div>
+      <div class="ci-fill${sig?" ci-fill-sig":""}" style="left:${fillL}%;width:${fillW}%"></div>
+      <div class="ci-zero" style="left:${zeroFrac*100}%"></div>
+      <div class="ci-tick" style="left:${diffFrac*100}%"></div>
+    </div>
+    <span class="badge ${sig?"badge-sig":"badge-ns"}">${sig?"sig":"n.s."}</span>
+  </div>`;
+}
+
+/* ── Main computation ── */
+function compute(){
+  let N=a*b*n, grand=0, ssY=0;
+  let cellT=[], aT=Array(a).fill(0), bT=Array(b).fill(0);
+  for(let i=0;i<a;i++){
+    cellT.push([]);
+    for(let j=0;j<b;j++){
+      let s=D[i][j].reduce((acc,v)=>acc+v,0);
+      cellT[i].push(s); aT[i]+=s; bT[j]+=s; grand+=s;
+    }
+  }
+  for(let i=0;i<a;i++) for(let j=0;j<b;j++) for(let r=0;r<n;r++){let v=D[i][j][r];ssY+=v*v;}
+
+  let CF=grand*grand/N;
+  let SST=ssY-CF;
+  let ssCells=cellT.reduce((s,row)=>s+row.reduce((s2,v)=>s2+v*v,0),0)/n-CF;
+  let SSA=aT.reduce((s,v)=>s+v*v,0)/(b*n)-CF;
+  let SSB=bT.reduce((s,v)=>s+v*v,0)/(a*n)-CF;
+  let SSAB=ssCells-SSA-SSB;
+  let SSE=SST-SSA-SSB-SSAB;
+
+  let dfA=a-1,dfB=b-1,dfAB=dfA*dfB,dfE=a*b*(n-1),dfT=N-1;
+  let MSA=SSA/dfA,MSB=SSB/dfB,MSAB=SSAB/dfAB,MSE=SSE/dfE;
+  let FA=MSA/MSE,FB=MSB/MSE,FAB=MSAB/MSE;
+  let pA=fPval(FA,dfA,dfE),pB=fPval(FB,dfB,dfE),pAB=fPval(FAB,dfAB,dfE);
+  let intSig=pAB<0.05;
+  let tc=tCrit(dfE);
+
+  let cellM=[];
+  for(let i=0;i<a;i++){cellM.push([]);for(let j=0;j<b;j++)cellM[i].push(cellT[i][j]/n);}
+  let margA=aT.map(v=>v/(b*n));
+  let margB=bT.map(v=>v/(a*n));
+
+  /* ANOVA table */
+  function aRow(src,ss,df,ms,F,p,cls){
+    let star=p!==null&&p<0.05?` <span class="sig">*</span>`:"";
+    let pcell=p!==null?`<span class="${p<0.05?"sig":""}">${pStr(p)}</span>${star}`:"—";
+    return `<tr class="${cls||""}">
+      <td style="text-align:left">${src}</td>
+      <td>${fmt(ss)}</td><td>${df}</td><td>${fmt(ms)}</td>
+      <td style="font-weight:500">${F!==null?fmt(F):"—"}</td>
+      <td>${pcell}</td></tr>`;
+  }
+  document.getElementById("anovaOut").innerHTML=`
+    <table>
+    <thead><tr>
+      <th style="text-align:left">Source</th>
+      <th>SS</th><th>df</th><th>MS</th><th>F</th><th>p-value</th>
+    </tr></thead>
+    <tbody>
+    ${aRow("Factor A",SSA,dfA,MSA,FA,pA)}
+    ${aRow("Factor B",SSB,dfB,MSB,FB,pB)}
+    ${aRow("A × B",SSAB,dfAB,MSAB,FAB,pAB)}
+    ${aRow("Error",SSE,dfE,MSE,null,null,"marg")}
+    <tr style="border-top:1px solid var(--border2)">
+      <td style="text-align:left;font-weight:500">Total</td>
+      <td>${fmt(SST)}</td><td>${dfT}</td><td colspan="3">—</td>
+    </tr>
+    </tbody></table>`;
+  document.getElementById("anovaFooter").innerHTML=
+    `MSE = ${fmt(MSE,4)} &nbsp;|&nbsp; df<sub>E</sub> = ${dfE} &nbsp;|&nbsp; t<sub>0.025,${dfE}</sub> = ${fmt(tc,4)}`;
+  document.getElementById("designBadge").textContent=`${a} × ${b} × ${n}`;
+
+  /* Decision */
+  let db=document.getElementById("decisionBox");
+  if(intSig){
+    db.className="decision-box decision-sig";
+    db.innerHTML=`<strong>Interaction A×B is significant</strong> (p = ${pStr(pAB)}). Reporting <strong>conditional CIs</strong> (simple effects) — comparing means within each level of the other factor.`;
+  } else {
+    db.className="decision-box decision-ns";
+    db.innerHTML=`Interaction A×B is <strong>not significant</strong> (p = ${pStr(pAB)}). Reporting <strong>marginal mean CIs</strong> — pairwise comparisons collapsed across the other factor.`;
+  }
+
+  /* Cell means table */
+  let cmHtml=`<table class="cell-table"><thead><tr><th></th>`;
+  for(let j=0;j<b;j++) cmHtml+=`<th>${Bnames[j]}</th>`;
+  cmHtml+=`<th>Marg. A</th></tr></thead><tbody>`;
+  for(let i=0;i<a;i++){
+    cmHtml+=`<tr><td>${Anames[i]}</td>`;
+    for(let j=0;j<b;j++) cmHtml+=`<td>${fmt(cellM[i][j])}</td>`;
+    cmHtml+=`<td class="marg">${fmt(margA[i])}</td></tr>`;
+  }
+  cmHtml+=`<tr><td class="marg">Marg. B</td>`;
+  for(let j=0;j<b;j++) cmHtml+=`<td class="marg">${fmt(margB[j])}</td>`;
+  cmHtml+=`<td>—</td></tr></tbody></table>`;
+  document.getElementById("cellMeansOut").innerHTML=cmHtml;
+
+  /* CIs */
+  let ciHtml="";
+
+  if(intSig){
+    document.getElementById("ciHead").textContent="Conditional CIs — simple effects (interaction significant)";
+    let se=Math.sqrt(2*MSE/n), mg=tc*se;
+    document.getElementById("ciInfo").innerHTML=
+      `Formula: (ȳ<sub>i|k</sub> − ȳ<sub>j|k</sub>) ± t<sub>α/2, ${dfE}</sub> × √(2·MSE / n)<br>
+       SE<sub>diff</sub> = √(2 × ${fmt(MSE,4)} / ${n}) = ${fmt(se,4)} &nbsp;|&nbsp; half-width = ±${fmt(mg,4)}`;
+
+    ciHtml+=`<div class="group-label">Factor A comparisons within each level of B</div>`;
+    for(let j=0;j<b;j++){
+      ciHtml+=`<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin:8px 0 4px">at ${Bnames[j]}</div>`;
+      for(let i=0;i<a;i++) for(let k=i+1;k<a;k++){
+        let d=cellM[i][j]-cellM[k][j];
+        ciHtml+=ciRow(`${Anames[i]} − ${Anames[k]}`,d,d-mg,d+mg);
+      }
+    }
+    ciHtml+=`<div class="group-label" style="margin-top:16px">Factor B comparisons within each level of A</div>`;
+    for(let i=0;i<a;i++){
+      ciHtml+=`<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin:8px 0 4px">at ${Anames[i]}</div>`;
+      for(let j=0;j<b;j++) for(let k=j+1;k<b;k++){
+        let d=cellM[i][j]-cellM[i][k];
+        ciHtml+=ciRow(`${Bnames[j]} − ${Bnames[k]}`,d,d-mg,d+mg);
+      }
+    }
+  } else {
+    document.getElementById("ciHead").textContent="Marginal mean CIs — no significant interaction";
+    let seAd=Math.sqrt(2*MSE/(b*n)), mgA=tc*seAd;
+    let seBd=Math.sqrt(2*MSE/(a*n)), mgB=tc*seBd;
+    document.getElementById("ciInfo").innerHTML=
+      `Factor A: (ȳ<sub>i·</sub> − ȳ<sub>j·</sub>) ± t × √(2·MSE/(b·n)) &nbsp; SE = ${fmt(seAd,4)} | half-width = ±${fmt(mgA,4)}<br>
+       Factor B: (ȳ<sub>·i</sub> − ȳ<sub>·j</sub>) ± t × √(2·MSE/(a·n)) &nbsp; SE = ${fmt(seBd,4)} | half-width = ±${fmt(mgB,4)}`;
+
+    ciHtml+=`<div class="group-label">Factor A — pairwise marginal comparisons</div>`;
+    for(let i=0;i<a;i++) for(let k=i+1;k<a;k++){
+      let d=margA[i]-margA[k];
+      ciHtml+=ciRow(`${Anames[i]} − ${Anames[k]}`,d,d-mgA,d+mgA);
+    }
+    ciHtml+=`<div class="group-label" style="margin-top:16px">Factor B — pairwise marginal comparisons</div>`;
+    for(let j=0;j<b;j++) for(let k=j+1;k<b;k++){
+      let d=margB[j]-margB[k];
+      ciHtml+=ciRow(`${Bnames[j]} − ${Bnames[k]}`,d,d-mgB,d+mgB);
+    }
+  }
+
+  document.getElementById("ciOut").innerHTML=ciHtml;
+  document.getElementById("results").style.display="block";
+  document.getElementById("placeholder").style.display="none";
+}
+
+buildTable();
+</script>
+</body>
+</html>
