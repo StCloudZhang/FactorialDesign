@@ -3,710 +3,968 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Two-Way Factorial ANOVA — Conditional CIs</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<title>Two-Factor Factorial ANOVA — Interactive Designer</title>
 <style>
-  :root {
-    --bg: #f5f3ef;
-    --surface: #ffffff;
-    --surface2: #f9f8f6;
-    --border: #e3dfd8;
-    --border2: #cdc9c1;
-    --text: #1a1916;
-    --text2: #6b6760;
-    --text3: #9b9892;
-    --accent: #2d5a3d;
-    --accent-light: #e8f0eb;
-    --accent2: #8b4513;
-    --accent2-light: #f5ede6;
-    --danger: #b33a2a;
-    --danger-light: #fdf0ee;
-    --info: #1d4e7a;
-    --info-light: #edf3f9;
-    --mono: 'DM Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem;
+  color: #1a1a2e;
+}
 
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
-  header {
-    background: var(--text);
-    color: #f5f3ef;
-    padding: 28px 40px 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  header::after {
-    content: '';
-    position: absolute;
-    right: -40px; top: -60px;
-    width: 260px; height: 260px;
-    border-radius: 50%;
-    border: 1px solid rgba(245,243,239,0.08);
-  }
-  header::before {
-    content: '';
-    position: absolute;
-    right: 60px; top: -20px;
-    width: 160px; height: 160px;
-    border-radius: 50%;
-    border: 1px solid rgba(245,243,239,0.06);
-  }
-  .header-label {
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    opacity: 0.5;
-    margin-bottom: 8px;
-    font-family: var(--mono);
-  }
-  header h1 {
-    font-size: 26px;
-    font-weight: 300;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-  }
-  header h1 span { font-weight: 500; }
-  .header-formula {
-    margin-top: 10px;
-    font-family: var(--mono);
-    font-size: 12px;
-    opacity: 0.45;
-    font-style: italic;
-  }
+/* Header with gradient */
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 24px;
+  padding: 2rem 2rem 1.8rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 20px 35px -10px rgba(0,0,0,0.3);
+  color: white;
+}
 
-  .layout {
-    display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 0;
-    min-height: calc(100vh - 100px);
-  }
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
 
-  .sidebar {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 24px 20px;
-    position: sticky;
-    top: 0;
-    height: fit-content;
-  }
+.header h1 span {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
-  .main {
-    padding: 24px 28px;
-    min-width: 0;
-  }
+.header p {
+  opacity: 0.8;
+  font-size: 0.95rem;
+}
 
-  .panel-title {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 14px;
-    font-family: var(--mono);
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
+/* Dropdown selector */
+.mode-selector {
+  background: white;
+  border-radius: 60px;
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 0.5rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
 
-  .field-group { margin-bottom: 16px; }
-  .field-group label {
-    display: block;
-    font-size: 11px;
-    color: var(--text2);
-    margin-bottom: 5px;
-    font-family: var(--mono);
-  }
+.mode-btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f1f5f9;
+  color: #475569;
+  font-family: inherit;
+}
 
-  .field-row { display: flex; gap: 10px; }
-  .field-row > div { flex: 1; }
+.mode-btn:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
 
-  input[type=number], input[type=text] {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface2);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    transition: border-color 0.15s;
-    outline: none;
-  }
-  input[type=number]:focus, input[type=text]:focus {
-    border-color: var(--accent);
-    background: #fff;
-  }
-  input[type=number] { width: 100%; }
+.mode-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+}
 
-  .data-input {
-    width: 64px !important;
-    text-align: center;
-    padding: 5px 4px;
-    font-size: 12px;
-  }
+/* Card design */
+.card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  margin-bottom: 1.8rem;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 8px;
-  }
-  .btn:hover { background: var(--surface2); border-color: var(--border2); }
+.card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 1.2rem 1.8rem;
+  border-bottom: 2px solid #667eea;
+}
 
-  .btn-primary {
-    background: var(--text);
-    color: #f5f3ef;
-    border-color: var(--text);
-    font-weight: 500;
-  }
-  .btn-primary:hover { background: #2e2c29; border-color: #2e2c29; }
+.card-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
 
-  .btn-accent {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-    font-weight: 500;
-  }
-  .btn-accent:hover { background: #234a31; }
+.card-header h2 i {
+  margin-right: 8px;
+}
 
-  .data-wrap {
-    margin-top: 14px;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-  }
+.card-body {
+  padding: 1.8rem;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  th {
-    text-align: right;
-    padding: 8px 10px;
-    background: var(--surface2);
-    color: var(--text2);
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 400;
-    border-bottom: 1px solid var(--border);
-  }
-  th:first-child, td:first-child { text-align: left; }
-  td {
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--border);
-    text-align: right;
-    font-family: var(--mono);
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--surface2); }
+/* Form styling */
+.form-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 16px;
-    overflow: hidden;
-  }
-  .card-head {
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .card-head-title {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-family: var(--mono);
-    color: var(--text2);
-  }
-  .card-body { padding: 18px; }
+.form-group {
+  flex: 1;
+  min-width: 200px;
+}
 
-  .stat-chip {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    color: var(--text2);
-    background: var(--surface2);
-  }
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #667eea;
+  margin-bottom: 0.4rem;
+}
 
-  .sig { color: var(--danger); font-weight: 500; }
-  .badge {
-    display: inline-block;
-    font-size: 10px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-family: var(--mono);
-    font-weight: 500;
-  }
-  .badge-sig { background: var(--danger-light); color: var(--danger); border: 1px solid #f0c4bc; }
-  .badge-ns { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+.form-group input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
 
-  .decision-box {
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin-bottom: 16px;
-    border-left: 3px solid;
-  }
-  .decision-sig { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-  .decision-ns { background: var(--info-light); border-color: var(--info); color: var(--info); }
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+}
 
-  .ci-info {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text2);
-    margin-bottom: 14px;
-    line-height: 1.8;
-  }
+.level-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+}
 
-  .group-label {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    font-family: var(--mono);
-    color: var(--text3);
-    margin: 14px 0 6px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--border);
-  }
+.level-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-  .ci-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 5px;
-    background: var(--surface);
-    flex-wrap: wrap;
-  }
-  .ci-row:hover { background: var(--surface2); }
-  .ci-label { font-family: var(--mono); font-size: 12px; font-weight: 500; min-width: 120px; }
-  .ci-diff { font-family: var(--mono); font-size: 12px; color: var(--text); min-width: 72px; text-align: right; }
-  .ci-interval { font-family: var(--mono); font-size: 11px; color: var(--text2); min-width: 170px; }
-  .ci-bar-wrap { flex: 1; min-width: 100px; height: 16px; position: relative; }
-  .ci-track { position: absolute; top: 7px; left: 0; right: 0; height: 1px; background: var(--border2); }
-  .ci-fill { position: absolute; top: 5px; height: 5px; border-radius: 2px; background: var(--accent); opacity: 0.35; }
-  .ci-fill-sig { background: var(--accent); opacity: 0.6; }
-  .ci-tick { position: absolute; top: 2px; width: 2px; height: 11px; border-radius: 1px; background: var(--text); }
-  .ci-zero { position: absolute; top: 0; width: 1px; height: 16px; background: var(--border2); }
+.level-badge input {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: auto;
+  min-width: 60px;
+  padding: 0.2rem 0.4rem;
+  border-radius: 20px;
+  text-align: center;
+}
 
-  .cell-table th { text-align: center; }
-  .cell-table td { text-align: center; }
-  .cell-table td:first-child { text-align: left; font-weight: 500; }
-  .cell-table .marg { font-weight: 500; background: var(--surface2); }
+.level-badge input:focus {
+  outline: none;
+  background: rgba(255,255,255,0.4);
+}
 
-  #results { display: none; }
+.level-badge button {
+  background: rgba(255,255,255,0.3);
+  border: none;
+  color: white;
+  border-radius: 20px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
 
-  @media (max-width: 800px) {
-    .layout { grid-template-columns: 1fr; }
-    .sidebar { position: static; border-right: none; border-bottom: 1px solid var(--border); }
-    header { padding: 20px 20px 18px; }
-    .main { padding: 16px; }
-  }
+.level-badge button:hover {
+  background: rgba(255,255,255,0.5);
+  transform: scale(1.05);
+}
+
+.add-level-btn {
+  background: #f1f5f9;
+  border: 2px dashed #cbd5e1;
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.add-level-btn:hover {
+  background: #e2e8f0;
+  border-color: #667eea;
+}
+
+/* Data table - CENTERED VALUES */
+.data-table-wrapper {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  margin-top: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.data-table th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.8rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.data-table td {
+  padding: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.data-table td.row-label {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #667eea;
+  text-align: center;
+}
+
+.data-table input {
+  width: 70px;
+  padding: 0.4rem;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: monospace;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.7rem 1.5rem;
+  border-radius: 40px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 10px rgba(102,126,234,0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Results styling */
+.stat-badge {
+  display: inline-block;
+  padding: 0.3rem 1rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.stat-sig {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.stat-ns {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.stat-int {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ci-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.ci-label {
+  min-width: 200px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.ci-value {
+  font-family: monospace;
+  font-size: 0.85rem;
+  min-width: 70px;
+  text-align: center;
+}
+
+.ci-interval {
+  font-family: monospace;
+  color: #667eea;
+  min-width: 140px;
+  text-align: center;
+}
+
+/* Hidden mode */
+.mode-content {
+  display: none;
+}
+
+.mode-content.active-mode {
+  display: block;
+}
+
+/* Info box */
+.info-box {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-left: 4px solid #f59e0b;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+/* Data entry table styling */
+.custom-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.custom-data-table th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.8rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.custom-data-table td {
+  padding: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.custom-data-table td.row-label {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #667eea;
+  text-align: center;
+}
+
+.custom-data-table input {
+  width: 70px;
+  padding: 0.4rem;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: monospace;
+}
+
+/* Interpretation box */
+.interpretation-box {
+  background: #e8f0fe;
+  border-left: 4px solid #667eea;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #1a1a2e;
+}
+
+/* Section header for CI categories */
+.ci-section-header {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  margin: 1rem 0 0.8rem 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #3730a3;
+  display: inline-block;
+}
+
+/* Effect size badge */
+.effect-size-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+.effect-small { background: #dbeafe; color: #1e40af; }
+.effect-medium { background: #fed7aa; color: #9a3412; }
+.effect-large { background: #dcfce7; color: #166534; }
+
+.formula-box {
+  background: #f1f5f9;
+  padding: 0.6rem;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  margin: 0.5rem 0;
+  border-left: 3px solid #667eea;
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-label">Statistical Analysis</div>
-  <h1>Two-Way Factorial ANOVA<br><span>+ Conditional Confidence Intervals</span></h1>
-  <div class="header-formula">Y<sub>ijk</sub> = μ + α<sub>i</sub> + β<sub>j</sub> + (αβ)<sub>ij</sub> + ε<sub>ijk</sub> &nbsp;|&nbsp; p-values via exact F-distribution</div>
-</header>
-
-<div class="layout">
-  <div class="sidebar">
-    <div class="panel-title">Design Setup</div>
-
-    <div class="field-group">
-      <div class="field-row">
-        <div><label>Factor A levels (a)</label><input type="number" id="aLev" value="3" min="2" max="6"></div>
-        <div><label>Factor B levels (b)</label><input type="number" id="bLev" value="2" min="2" max="6"></div>
-      </div>
-    </div>
-    <div class="field-group">
-      <label>Replicates per cell (n)</label>
-      <input type="number" id="nRep" value="3" min="2" max="10">
-    </div>
-
-    <button class="btn" onclick="buildTable()">&#8635; Build / refresh table</button>
-    <button class="btn" onclick="loadExampleNoInt()">&#9654; Example: no interaction</button>
-    <button class="btn" onclick="loadExampleInt()">&#9654; Example: interaction present</button>
-    <button class="btn btn-accent" onclick="compute()">&#10003; Compute ANOVA + CIs</button>
-
-    <div id="dataArea" style="margin-top:12px"></div>
+<div class="container">
+  <div class="header">
+    <h1>📊 Two-Factor <span>Factorial ANOVA</span></h1>
+    <p>Analyze main effects, interaction effects, and conditional confidence intervals</p>
   </div>
 
-  <div class="main">
-    <div id="results">
+  <!-- Dropdown-style mode selector -->
+  <div class="mode-selector">
+    <button class="mode-btn active" data-mode="example-ns">📘 Example: No Interaction</button>
+    <button class="mode-btn" data-mode="example-int">⚡ Example: Strong Interaction</button>
+    <button class="mode-btn" data-mode="custom">✏️ Setup Your Own Study</button>
+  </div>
 
-      <div class="card">
-        <div class="card-head">
-          <span class="card-head-title">ANOVA Table</span>
-          <span id="designBadge" class="stat-chip"></span>
+  <!-- Mode 1: Example - No Interaction -->
+  <div id="mode-example-ns" class="mode-content active-mode">
+    <div class="card">
+      <div class="card-header">
+        <h2>📘 Example: No Interaction (Additive Model)</h2>
+      </div>
+      <div class="card-body">
+        <div class="info-box">
+          <strong>🔬 Interpretation:</strong> Factors act independently. The effect of Therapy is constant across all Dosage levels. 
+          Profiles are parallel — no significant interaction.
         </div>
-        <div class="card-body">
-          <div id="anovaOut"></div>
-          <div id="anovaFooter" style="margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--text3)"></div>
+        <div id="exampleNoIntData"></div>
+        <div class="button-group">
+          <button class="btn btn-primary" id="runNoIntBtn">▶ Run ANOVA</button>
         </div>
       </div>
-
-      <div id="decisionBox" class="decision-box"></div>
-
-      <div class="card">
-        <div class="card-head"><span class="card-head-title">Cell Means &amp; Marginal Means</span></div>
-        <div class="card-body"><div id="cellMeansOut"></div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <span class="card-head-title" id="ciHead">Confidence Intervals for Mean Differences</span>
-        </div>
-        <div class="card-body">
-          <div class="ci-info" id="ciInfo"></div>
-          <div id="ciOut"></div>
-        </div>
-      </div>
-
     </div>
+  </div>
 
-    <div id="placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:var(--text3);text-align:center">
-      <div style="font-size:40px;margin-bottom:12px;opacity:0.3">&#9638;</div>
-      <div style="font-family:var(--mono);font-size:12px">Configure design and click <strong>Compute ANOVA + CIs</strong></div>
+  <!-- Mode 2: Example - Strong Interaction -->
+  <div id="mode-example-int" class="mode-content">
+    <div class="card">
+      <div class="card-header">
+        <h2>⚡ Example: Strong Interaction (Crossing Profiles)</h2>
+      </div>
+      <div class="card-body">
+        <div class="info-box">
+          <strong>🔬 Interpretation:</strong> The effect of Water depends on Fertilizer level. At low fertilizer, extra water reduces yield; 
+          at high fertilizer, extra water increases yield — significant interaction.
+        </div>
+        <div id="exampleIntData"></div>
+        <div class="button-group">
+          <button class="btn btn-primary" id="runIntBtn">▶ Run ANOVA</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode 3: Custom Study Setup (Fully Functional) -->
+  <div id="mode-custom" class="mode-content">
+    <div class="card">
+      <div class="card-header">
+        <h2>✏️ Setup Your Own Factorial Design</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>FACTOR A NAME</label>
+            <input type="text" id="factorAName" value="Treatment">
+          </div>
+          <div class="form-group">
+            <label>FACTOR B NAME</label>
+            <input type="text" id="factorBName" value="Environment">
+          </div>
+          <div class="form-group">
+            <label>REPLICATES (n)</label>
+            <input type="number" id="customNRep" value="3" min="2" max="8">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>LEVELS OF A (click to edit)</label>
+            <div id="customALevels" class="level-list"></div>
+            <button class="add-level-btn" id="addCustomA">+ Add level to Factor A</button>
+          </div>
+          <div class="form-group">
+            <label>LEVELS OF B (click to edit)</label>
+            <div id="customBLevels" class="level-list"></div>
+            <button class="add-level-btn" id="addCustomB">+ Add level to Factor B</button>
+          </div>
+        </div>
+
+        <div class="data-table-wrapper">
+          <div id="customDataTable"></div>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" id="runCustomBtn">🔬 Run ANOVA</button>
+          <button class="btn btn-secondary" id="resetCustomBtn">↺ Reset to Default</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Panel -->
+  <div id="resultsPanel" style="display: none;">
+    <div class="card">
+      <div class="card-header">
+        <h2>📈 Analysis Results</h2>
+      </div>
+      <div class="card-body">
+        <div id="anovaResults"></div>
+        <div id="interactionMsg" class="info-box" style="margin-top: 1rem;"></div>
+        
+        <h3 style="margin: 1.5rem 0 0.8rem;">📊 Cell & Marginal Means</h3>
+        <div id="meansResults"></div>
+        
+        <h3 style="margin: 1.5rem 0 0.8rem;" id="ciHeader">🔍 Confidence Intervals & Effect Sizes</h3>
+        <div id="ciNotice" style="background: #f1f5f9; padding: 0.8rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.8rem;"></div>
+        <div id="ciResults"></div>
+        <div id="ciInterpretation" class="interpretation-box"></div>
+        <div id="effectSizeInterpretation" class="interpretation-box" style="margin-top: 1rem; background: #f0fdf4; border-left-color: #15803d;"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-let a=3, b=2, n=3;
-let D=[], Anames=[], Bnames=[];
+// Statistical functions
+function lnG(z){let p=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];if(z<0.5)return Math.log(Math.PI)-Math.log(Math.sin(Math.PI*z))-lnG(1-z);z-=1;let x=p[0];for(let i=1;i<9;i++)x+=p[i]/(z+i);let t=z+7.5;return Math.log(2*Math.PI)/2+(z+0.5)*Math.log(t)-t+Math.log(x);}
+function bInc(x,a,b){if(x<=0)return 0;if(x>=1)return 1;let bt=Math.exp(lnG(a+b)-lnG(a)-lnG(b)+a*Math.log(x)+b*Math.log(1-x));function cf(x,a,b){let eps=1e-12,h=1,c=1,d=1-((a+b)*x/(a+1));if(Math.abs(d)<eps)d=eps;d=1/d;h=d;for(let m=1;m<=200;m++){let m2=2*m,A=m*(b-m)*x/((a-1+m2)*(a+m2));d=1+A*d;if(Math.abs(d)<eps)d=eps;c=1+A/c;if(Math.abs(c)<eps)c=eps;d=1/d;h*=d*c;A=-(a+m)*(a+b+m)*x/((a+m2)*(a+1+m2));d=1+A*d;if(Math.abs(d)<eps)d=eps;c=1+A/c;if(Math.abs(c)<eps)c=eps;d=1/d;let del=d*c;h*=del;if(Math.abs(del-1)<eps)break;}return h;}if(x<(a+1)/(a+b+2))return bt*cf(x,a,b)/a;return 1-bt*cf(1-x,b,a)/b;}
+function fP(F,d1,d2){if(F<=0)return 1;let x=d1*F/(d1*F+d2);return 1-bInc(x,d1/2,d2/2);}
+function tCrit(df){let m={1:12.706,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228,12:2.179,14:2.145,16:2.12,18:2.101,20:2.086,30:2.042,40:2.021,60:2.0,100:1.984,200:1.972};let r=Math.round(df);return m[r]||1.96;}
 
-/* ── Incomplete beta / exact p-value ── */
-function lnG(z){
-  const p=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
-  if(z<0.5) return Math.log(Math.PI)-Math.log(Math.sin(Math.PI*z))-lnG(1-z);
-  z-=1; let x=p[0];
-  for(let i=1;i<9;i++) x+=p[i]/(z+i);
-  let t=z+7.5;
-  return Math.log(2*Math.PI)/2+(z+0.5)*Math.log(t)-t+Math.log(x);
-}
-function betainc(x,aa,bb){
-  if(x<=0) return 0; if(x>=1) return 1;
-  let bt=Math.exp(lnG(aa+bb)-lnG(aa)-lnG(bb)+aa*Math.log(x)+bb*Math.log(1-x));
-  function cf(x,aa,bb){
-    let eps=1e-12,h=1,c=1,d=1-((aa+bb)*x/(aa+1));
-    if(Math.abs(d)<eps)d=eps; d=1/d; h=d;
-    for(let m=1;m<=200;m++){
-      let m2=2*m;
-      let A=m*(bb-m)*x/((aa-1+m2)*(aa+m2));
-      d=1+A*d; if(Math.abs(d)<eps)d=eps; c=1+A/c; if(Math.abs(c)<eps)c=eps; d=1/d; h*=d*c;
-      A=-(aa+m)*(aa+bb+m)*x/((aa+m2)*(aa+1+m2));
-      d=1+A*d; if(Math.abs(d)<eps)d=eps; c=1+A/c; if(Math.abs(c)<eps)c=eps; d=1/d;
-      let del=d*c; h*=del;
-      if(Math.abs(del-1)<eps) break;
-    }
-    return h;
-  }
-  if(x<(aa+1)/(aa+bb+2)) return bt*cf(x,aa,bb)/aa;
-  return 1-bt*cf(1-x,bb,aa)/bb;
-}
-function fPval(F,d1,d2){
-  if(F<=0||d1<=0||d2<=0) return 1;
-  // p = P(F_rv > F_obs) = 1 - I_x(d1/2, d2/2), where x = d1*F/(d1*F+d2)
-  let x=d1*F/(d1*F+d2);
-  return 1-betainc(x,d1/2,d2/2);
+// Effect size interpretation function
+function interpretEtaSquared(eta) {
+  if (eta < 0.01) return { label: "very small", class: "effect-small", desc: "negligible practical significance" };
+  if (eta < 0.06) return { label: "small", class: "effect-small", desc: "explains 1-6% of variance" };
+  if (eta < 0.14) return { label: "medium", class: "effect-medium", desc: "explains 6-14% of variance — moderate practical significance" };
+  return { label: "large", class: "effect-large", desc: "explains >14% of variance — substantial practical significance" };
 }
 
-/* ── t critical value ── */
-const tTbl={1:12.706,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228,
-  11:2.201,12:2.179,13:2.16,14:2.145,15:2.131,16:2.12,17:2.11,18:2.101,19:2.093,20:2.086,
-  22:2.074,24:2.064,26:2.056,28:2.048,30:2.042,35:2.03,40:2.021,45:2.014,50:2.009,60:2,
-  70:1.994,80:1.99,90:1.987,100:1.984,120:1.98,150:1.976,200:1.972,300:1.968,500:1.965,1000:1.962};
-function tCrit(df){
-  if(df<=0) return 1.96;
-  if(tTbl[df]) return tTbl[df];
-  let keys=Object.keys(tTbl).map(Number).sort((x,y)=>x-y);
-  if(df>=keys[keys.length-1]) return 1.96;
-  for(let i=0;i<keys.length-1;i++){
-    if(df>=keys[i]&&df<=keys[i+1]){
-      let t1=tTbl[keys[i]],t2=tTbl[keys[i+1]];
-      return t1+(t2-t1)*(df-keys[i])/(keys[i+1]-keys[i]);
+function interpretCohenD(d) {
+  let absD = Math.abs(d);
+  if (absD < 0.2) return { label: "negligible", class: "effect-small", desc: "difference < 0.2 SD — very small effect" };
+  if (absD < 0.5) return { label: "small", class: "effect-small", desc: "difference of 0.2-0.5 SD — small but noticeable effect" };
+  if (absD < 0.8) return { label: "medium", class: "effect-medium", desc: "difference of 0.5-0.8 SD — moderate effect" };
+  return { label: "large", class: "effect-large", desc: "difference > 0.8 SD — large, practically meaningful effect" };
+}
+
+// Example Data
+const noIntData = {
+  aName: "Dosage", bName: "Therapy",
+  aLevs: ["Low", "Medium", "High"],
+  bLevs: ["Standard", "New"],
+  n: 4,
+  data: [[[10,11,9,10],[14,15,13,14]],[[20,19,21,20],[24,23,25,24]],[[30,31,29,30],[34,35,33,34]]]
+};
+
+const intData = {
+  aName: "Fertilizer", bName: "Water",
+  aLevs: ["Low", "Med", "High"],
+  bLevs: ["Dry", "Wet"],
+  n: 4,
+  data: [[[10,11,9,10],[22,23,21,22]],[[20,19,21,20],[21,20,22,21]],[[30,31,29,30],[18,19,17,18]]]
+};
+
+// Custom mode state
+let customALevels = ["Low", "High"];
+let customBLevels = ["Control", "Treated"];
+let customN = 3;
+let customData3D = [];
+
+function initCustomData() {
+  customData3D = [];
+  for(let i=0; i<customALevels.length; i++) {
+    customData3D.push([]);
+    for(let j=0; j<customBLevels.length; j++) {
+      customData3D[i].push(Array(customN).fill(0));
     }
   }
-  return 1.96;
 }
 
-function fmt(v,d=3){ return (+v).toFixed(d); }
-function pStr(p){ return p<0.0001?"&lt;.0001":fmt(p,4); }
-
-/* ── Build / refresh ── */
-function buildTable(preset){
-  a=Math.max(2,Math.min(6,+document.getElementById("aLev").value||3));
-  b=Math.max(2,Math.min(6,+document.getElementById("bLev").value||2));
-  n=Math.max(2,Math.min(10,+document.getElementById("nRep").value||3));
-  document.getElementById("aLev").value=a;
-  document.getElementById("bLev").value=b;
-  document.getElementById("nRep").value=n;
-  if(!preset){
-    D=[];
-    for(let i=0;i<a;i++){D.push([]);for(let j=0;j<b;j++){D[i].push([]);for(let r=0;r<n;r++)D[i][j].push(0);}}
-    Anames=Array.from({length:a},(_,i)=>`A${i+1}`);
-    Bnames=Array.from({length:b},(_,i)=>`B${i+1}`);
-  }
-  renderTable();
-  document.getElementById("results").style.display="none";
-  document.getElementById("placeholder").style.display="flex";
+function renderCustomLevels() {
+  const aContainer = document.getElementById("customALevels");
+  const bContainer = document.getElementById("customBLevels");
+  
+  aContainer.innerHTML = "";
+  customALevels.forEach((lev, idx) => {
+    const badge = document.createElement("div");
+    badge.className = "level-badge";
+    badge.innerHTML = `<input type="text" value="${lev}" class="level-input" data-type="a" data-idx="${idx}" style="background:rgba(255,255,255,0.2); border:none; color:white; width:auto; min-width:60px;"> <button class="remove-level" data-type="a" data-idx="${idx}">✕</button>`;
+    aContainer.appendChild(badge);
+  });
+  
+  bContainer.innerHTML = "";
+  customBLevels.forEach((lev, idx) => {
+    const badge = document.createElement("div");
+    badge.className = "level-badge";
+    badge.innerHTML = `<input type="text" value="${lev}" class="level-input" data-type="b" data-idx="${idx}" style="background:rgba(255,255,255,0.2); border:none; color:white; width:auto; min-width:60px;"> <button class="remove-level" data-type="b" data-idx="${idx}">✕</button>`;
+    bContainer.appendChild(badge);
+  });
+  
+  document.querySelectorAll(".level-input").forEach(inp => {
+    inp.addEventListener("change", (e) => {
+      const type = inp.dataset.type;
+      const idx = parseInt(inp.dataset.idx);
+      if(type === "a" && idx < customALevels.length) {
+        customALevels[idx] = inp.value;
+      } else if(type === "b" && idx < customBLevels.length) {
+        customBLevels[idx] = inp.value;
+      }
+      renderCustomDataTable();
+    });
+  });
+  
+  document.querySelectorAll(".remove-level").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const type = btn.dataset.type;
+      const idx = parseInt(btn.dataset.idx);
+      if(type === "a" && customALevels.length > 2) {
+        customALevels.splice(idx, 1);
+      } else if(type === "b" && customBLevels.length > 2) {
+        customBLevels.splice(idx, 1);
+      }
+      initCustomData();
+      renderCustomLevels();
+      renderCustomDataTable();
+    });
+  });
 }
 
-function renderTable(){
-  let html=`<div class="data-wrap"><table><thead><tr>
-    <th style="text-align:left">A</th><th style="text-align:left">B</th>`;
-  for(let r=0;r<n;r++) html+=`<th>r${r+1}</th>`;
-  html+=`</tr></thead><tbody>`;
-  for(let i=0;i<a;i++) for(let j=0;j<b;j++){
-    html+=`<tr><td style="text-align:left;font-weight:500">${Anames[i]}</td>
-               <td style="text-align:left;color:var(--text2)">${Bnames[j]}</td>`;
-    for(let r=0;r<n;r++)
-      html+=`<td><input class="data-input" type="number" step="any" value="${D[i][j][r]}"
-                  onchange="D[${i}][${j}][${r}]=+this.value"></td>`;
-    html+=`</tr>`;
-  }
-  html+=`</tbody></table></div>`;
-  document.getElementById("dataArea").innerHTML=html;
-}
-
-/* ── Examples ── */
-// No interaction: treatment adds a constant +4 across all A levels → parallel profiles
-function loadExampleNoInt(){
-  document.getElementById("aLev").value=3;
-  document.getElementById("bLev").value=2;
-  document.getElementById("nRep").value=4;
-  a=3; b=2; n=4;
-  Anames=["Low","Med","High"];
-  Bnames=["Control","Treat"];
-  D=[
-    [[10,11,9,10],  [14,15,13,14]],
-    [[20,19,21,20], [24,23,25,24]],
-    [[30,31,29,30], [34,35,33,34]]
-  ];
-  buildTable(true);
-  setTimeout(compute,60);
-}
-
-// Interaction present: treatment helps at Low dose, hurts at High dose → crossing profiles
-function loadExampleInt(){
-  document.getElementById("aLev").value=3;
-  document.getElementById("bLev").value=2;
-  document.getElementById("nRep").value=4;
-  a=3; b=2; n=4;
-  Anames=["Low","Med","High"];
-  Bnames=["Control","Treat"];
-  D=[
-    [[10,11,9,10],  [22,23,21,22]],
-    [[20,19,21,20], [21,20,22,21]],
-    [[30,31,29,30], [18,19,17,18]]
-  ];
-  buildTable(true);
-  setTimeout(compute,60);
-}
-
-/* ── CI bar renderer ── */
-function ciRow(label, diff, lo, hi){
-  let sig = (lo>0)||(hi<0);
-  let span = Math.max(hi-lo, 0.0001);
-  let zeroFrac = Math.max(0, Math.min(1, -lo/span));
-  let diffFrac = Math.max(0, Math.min(1, (diff-lo)/span));
-  let fillL = Math.min(zeroFrac,diffFrac)*100;
-  let fillW = Math.abs(diffFrac-zeroFrac)*100;
-  return `<div class="ci-row">
-    <span class="ci-label">${label}</span>
-    <span class="ci-diff">${fmt(diff)}</span>
-    <span class="ci-interval">(${fmt(lo)}, ${fmt(hi)})</span>
-    <div class="ci-bar-wrap">
-      <div class="ci-track"></div>
-      <div class="ci-fill${sig?" ci-fill-sig":""}" style="left:${fillL}%;width:${fillW}%"></div>
-      <div class="ci-zero" style="left:${zeroFrac*100}%"></div>
-      <div class="ci-tick" style="left:${diffFrac*100}%"></div>
-    </div>
-    <span class="badge ${sig?"badge-sig":"badge-ns"}">${sig?"sig":"n.s."}</span>
-  </div>`;
-}
-
-/* ── Main computation ── */
-function compute(){
-  let N=a*b*n, grand=0, ssY=0;
-  let cellT=[], aT=Array(a).fill(0), bT=Array(b).fill(0);
-  for(let i=0;i<a;i++){
-    cellT.push([]);
-    for(let j=0;j<b;j++){
-      let s=D[i][j].reduce((acc,v)=>acc+v,0);
-      cellT[i].push(s); aT[i]+=s; bT[j]+=s; grand+=s;
+function renderCustomDataTable() {
+  let a = customALevels.length, b = customBLevels.length;
+  let aName = document.getElementById("factorAName").value || "Factor A";
+  let bName = document.getElementById("factorBName").value || "Factor B";
+  
+  let html = `<table class="custom-data-table"><thead><tr><th>${aName} \\ ${bName}</th>`;
+  for(let j=0; j<b; j++) html += `<th>${customBLevels[j]}</th>`;
+  html += `</thead><tbody>`;
+  
+  for(let i=0; i<a; i++) {
+    html += `<tr><td class="row-label">${customALevels[i]}</td>`;
+    for(let j=0; j<b; j++) {
+      html += `<td style="white-space: nowrap;">`;
+      for(let r=0; r<customN; r++) {
+        let val = (customData3D[i] && customData3D[i][j] && customData3D[i][j][r] !== undefined) ? customData3D[i][j][r] : 0;
+        html += `<input type="number" step="any" value="${val}" data-i="${i}" data-j="${j}" data-r="${r}" class="custom-cell"> `;
+      }
+      html += `</td>`;
     }
+    html += `</tr>`;
   }
-  for(let i=0;i<a;i++) for(let j=0;j<b;j++) for(let r=0;r<n;r++){let v=D[i][j][r];ssY+=v*v;}
+  html += `</tbody></table>`;
+  document.getElementById("customDataTable").innerHTML = html;
+  
+  document.querySelectorAll(".custom-cell").forEach(inp => {
+    inp.addEventListener("change", () => {
+      let i = parseInt(inp.dataset.i);
+      let j = parseInt(inp.dataset.j);
+      let r = parseInt(inp.dataset.r);
+      if(!isNaN(i) && !isNaN(j) && !isNaN(r)) {
+        if(!customData3D[i]) customData3D[i] = [];
+        if(!customData3D[i][j]) customData3D[i][j] = [];
+        customData3D[i][j][r] = parseFloat(inp.value) || 0;
+      }
+    });
+  });
+}
 
-  let CF=grand*grand/N;
-  let SST=ssY-CF;
-  let ssCells=cellT.reduce((s,row)=>s+row.reduce((s2,v)=>s2+v*v,0),0)/n-CF;
-  let SSA=aT.reduce((s,v)=>s+v*v,0)/(b*n)-CF;
-  let SSB=bT.reduce((s,v)=>s+v*v,0)/(a*n)-CF;
-  let SSAB=ssCells-SSA-SSB;
-  let SSE=SST-SSA-SSB-SSAB;
-
-  let dfA=a-1,dfB=b-1,dfAB=dfA*dfB,dfE=a*b*(n-1),dfT=N-1;
-  let MSA=SSA/dfA,MSB=SSB/dfB,MSAB=SSAB/dfAB,MSE=SSE/dfE;
-  let FA=MSA/MSE,FB=MSB/MSE,FAB=MSAB/MSE;
-  let pA=fPval(FA,dfA,dfE),pB=fPval(FB,dfB,dfE),pAB=fPval(FAB,dfAB,dfE);
-  let intSig=pAB<0.05;
-  let tc=tCrit(dfE);
-
-  let cellM=[];
-  for(let i=0;i<a;i++){cellM.push([]);for(let j=0;j<b;j++)cellM[i].push(cellT[i][j]/n);}
-  let margA=aT.map(v=>v/(b*n));
-  let margB=bT.map(v=>v/(a*n));
-
-  /* ANOVA table */
-  function aRow(src,ss,df,ms,F,p,cls){
-    let star=p!==null&&p<0.05?` <span class="sig">*</span>`:"";
-    let pcell=p!==null?`<span class="${p<0.05?"sig":""}">${pStr(p)}</span>${star}`:"—";
-    return `<tr class="${cls||""}">
-      <td style="text-align:left">${src}</td>
-      <td>${fmt(ss)}</td><td>${df}</td><td>${fmt(ms)}</td>
-      <td style="font-weight:500">${F!==null?fmt(F):"—"}</td>
-      <td>${pcell}</td></tr>`;
+function renderExampleTable(containerId, aName, bName, aLevs, bLevs, data, n) {
+  let html = `<div class="data-table-wrapper"><table class="data-table"><thead><tr><th>${aName} \\ ${bName}</th>`;
+  for(let j=0; j<bLevs.length; j++) html += `<th>${bLevs[j]}</th>`;
+  html += `</thead><tbody>`;
+  for(let i=0; i<aLevs.length; i++) {
+    html += `<tr><td class="row-label">${aLevs[i]}</td>`;
+    for(let j=0; j<bLevs.length; j++) {
+      html += `<td>`;
+      for(let r=0; r<n; r++) {
+        html += `<span style="display:inline-block; width:50px; background:#f1f5f9; margin:2px; padding:4px; border-radius:6px;">${data[i][j][r]}</span>`;
+      }
+      html += `</td>`;
+    }
+    html += `</tr>`;
   }
-  document.getElementById("anovaOut").innerHTML=`
-    <table>
-    <thead><tr>
-      <th style="text-align:left">Source</th>
-      <th>SS</th><th>df</th><th>MS</th><th>F</th><th>p-value</th>
-    </tr></thead>
-    <tbody>
-    ${aRow("Factor A",SSA,dfA,MSA,FA,pA)}
-    ${aRow("Factor B",SSB,dfB,MSB,FB,pB)}
-    ${aRow("A × B",SSAB,dfAB,MSAB,FAB,pAB)}
-    ${aRow("Error",SSE,dfE,MSE,null,null,"marg")}
-    <tr style="border-top:1px solid var(--border2)">
-      <td style="text-align:left;font-weight:500">Total</td>
-      <td>${fmt(SST)}</td><td>${dfT}</td><td colspan="3">—</td>
-    </tr>
-    </tbody></table>`;
-  document.getElementById("anovaFooter").innerHTML=
-    `MSE = ${fmt(MSE,4)} &nbsp;|&nbsp; df<sub>E</sub> = ${dfE} &nbsp;|&nbsp; t<sub>0.025,${dfE}</sub> = ${fmt(tc,4)}`;
-  document.getElementById("designBadge").textContent=`${a} × ${b} × ${n}`;
+  html += `</tbody></table></div>`;
+  document.getElementById(containerId).innerHTML = html;
+}
 
-  /* Decision */
-  let db=document.getElementById("decisionBox");
-  if(intSig){
-    db.className="decision-box decision-sig";
-    db.innerHTML=`<strong>Interaction A×B is significant</strong> (p = ${pStr(pAB)}). Reporting <strong>conditional CIs</strong> (simple effects) — comparing means within each level of the other factor.`;
-  } else {
-    db.className="decision-box decision-ns";
-    db.innerHTML=`Interaction A×B is <strong>not significant</strong> (p = ${pStr(pAB)}). Reporting <strong>marginal mean CIs</strong> — pairwise comparisons collapsed across the other factor.`;
-  }
-
-  /* Cell means table */
-  let cmHtml=`<table class="cell-table"><thead><tr><th></th>`;
-  for(let j=0;j<b;j++) cmHtml+=`<th>${Bnames[j]}</th>`;
-  cmHtml+=`<th>Marg. A</th></tr></thead><tbody>`;
-  for(let i=0;i<a;i++){
-    cmHtml+=`<tr><td>${Anames[i]}</td>`;
-    for(let j=0;j<b;j++) cmHtml+=`<td>${fmt(cellM[i][j])}</td>`;
-    cmHtml+=`<td class="marg">${fmt(margA[i])}</td></tr>`;
-  }
-  cmHtml+=`<tr><td class="marg">Marg. B</td>`;
-  for(let j=0;j<b;j++) cmHtml+=`<td class="marg">${fmt(margB[j])}</td>`;
-  cmHtml+=`<td>—</td></tr></tbody></table>`;
-  document.getElementById("cellMeansOut").innerHTML=cmHtml;
-
-  /* CIs */
-  let ciHtml="";
-
-  if(intSig){
-    document.getElementById("ciHead").textContent="Conditional CIs — simple effects (interaction significant)";
-    let se=Math.sqrt(2*MSE/n), mg=tc*se;
-    document.getElementById("ciInfo").innerHTML=
-      `Formula: (ȳ<sub>i|k</sub> − ȳ<sub>j|k</sub>) ± t<sub>α/2, ${dfE}</sub> × √(2·MSE / n)<br>
-       SE<sub>diff</sub> = √(2 × ${fmt(MSE,4)} / ${n}) = ${fmt(se,4)} &nbsp;|&nbsp; half-width = ±${fmt(mg,4)}`;
-
-    ciHtml+=`<div class="group-label">Factor A comparisons within each level of B</div>`;
-    for(let j=0;j<b;j++){
-      ciHtml+=`<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin:8px 0 4px">at ${Bnames[j]}</div>`;
-      for(let i=0;i<a;i++) for(let k=i+1;k<a;k++){
-        let d=cellM[i][j]-cellM[k][j];
-        ciHtml+=ciRow(`${Anames[i]} − ${Anames[k]}`,d,d-mg,d+mg);
+function runANOVA(aName, bName, aLevs, bLevs, n, data3D) {
+  let a = aLevs.length, b = bLevs.length;
+  let N = a*b*n;
+  let grand=0, ssY=0, csums=Array(a).fill().map(()=>Array(b).fill(0)), aS=Array(a).fill(0), bS=Array(b).fill(0);
+  for(let i=0;i<a;i++) for(let j=0;j<b;j++) { let s=0; for(let r=0;r<n;r++) { let v=data3D[i][j][r]||0; s+=v; ssY+=v*v; } csums[i][j]=s; aS[i]+=s; bS[j]+=s; grand+=s; }
+  let CF=grand*grand/N, SST=ssY-CF;
+  let scells=0; for(let i=0;i<a;i++) for(let j=0;j<b;j++) scells+=csums[i][j]*csums[i][j];
+  scells=scells/n-CF;
+  let SSA=aS.reduce((s,v)=>s+v*v,0)/(b*n)-CF;
+  let SSB=bS.reduce((s,v)=>s+v*v,0)/(a*n)-CF;
+  let SSAB=scells-SSA-SSB, SSE=SST-SSA-SSB-SSAB;
+  let dfA=a-1, dfB=b-1, dfAB=dfA*dfB, dfE=a*b*(n-1);
+  let MSA=SSA/dfA, MSB=SSB/dfB, MSAB=SSAB/dfAB, MSE=SSE/dfE;
+  let FA=MSA/MSE, FB=MSB/MSE, FAB=MSAB/MSE;
+  let pA=fP(FA,dfA,dfE), pB=fP(FB,dfB,dfE), pAB=fP(FAB,dfAB,dfE);
+  let intSig = pAB < 0.05;
+  let tc = tCrit(dfE);
+  let cellM = Array(a).fill().map((_,i)=>Array(b).fill().map((_,j)=>csums[i][j]/n));
+  let margA = aS.map(v=>v/(b*n)), margB = bS.map(v=>v/(a*n));
+  
+  // Calculate effect sizes (Partial Eta Squared)
+  let etaA = SSA / (SSA + SSE);
+  let etaB = SSB / (SSB + SSE);
+  let etaAB = SSAB / (SSAB + SSE);
+  
+  let etaA_int = interpretEtaSquared(etaA);
+  let etaB_int = interpretEtaSquared(etaB);
+  let etaAB_int = interpretEtaSquared(etaAB);
+  
+  function pStr(p){ return p<0.0001 ? '<0.0001' : p.toFixed(4); }
+  
+  let anovaHtml = `<table style="width:100%; border-collapse:collapse;"><tr style="background:#f1f5f9;"><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th><th>η²ₚ</th><th>Effect</th></tr>
+    <tr><td style="text-align:left">${aName}</td><td style="text-align:center">${SSA.toFixed(2)}</th><td style="text-align:center">${dfA}</th><td style="text-align:center">${MSA.toFixed(3)}</th><td style="text-align:center">${FA.toFixed(2)}</th><td style="text-align:center">${pStr(pA)}${pA<0.05?' *':''}</th><td style="text-align:center">${etaA.toFixed(3)}</th><td style="text-align:center"><span class="effect-size-badge ${etaA_int.class}">${etaA_int.label}</span></th></tr>
+    <tr><td style="text-align:left">${bName}</td><td style="text-align:center">${SSB.toFixed(2)}</th><td style="text-align:center">${dfB}</th><td style="text-align:center">${MSB.toFixed(3)}</th><td style="text-align:center">${FB.toFixed(2)}</th><td style="text-align:center">${pStr(pB)}${pB<0.05?' *':''}</th><td style="text-align:center">${etaB.toFixed(3)}</th><td style="text-align:center"><span class="effect-size-badge ${etaB_int.class}">${etaB_int.label}</span></th></tr>
+    <tr><td style="text-align:left">A × B</th><td style="text-align:center">${SSAB.toFixed(2)}</th><td style="text-align:center">${dfAB}</th><td style="text-align:center">${MSAB.toFixed(3)}</th><td style="text-align:center">${FAB.toFixed(2)}</th><td style="text-align:center">${pStr(pAB)}${pAB<0.05?' *':''}</th><td style="text-align:center">${etaAB.toFixed(3)}</th><td style="text-align:center"><span class="effect-size-badge ${etaAB_int.class}">${etaAB_int.label}</span></th></tr>
+    <tr><td style="text-align:left">Error</th><td style="text-align:center">${SSE.toFixed(2)}</th><td style="text-align:center">${dfE}</th><td style="text-align:center">${MSE.toFixed(3)}</th><td style="text-align:center">—</th><td style="text-align:center">—</th><td style="text-align:center">—</th><td style="text-align:center">—</th></tr>
+    </table>`;
+  document.getElementById("anovaResults").innerHTML = anovaHtml;
+  
+  let intMsg = intSig ? `<span class="stat-badge stat-int">⚠️ Significant Interaction (p = ${pAB.toFixed(4)})</span> — Reporting conditional simple effects CIs (post-hoc comparisons).` : `<span class="stat-badge stat-ns">✅ No Significant Interaction (p = ${pAB.toFixed(4)})</span> — Reporting main effect CIs (comparing marginal means).`;
+  document.getElementById("interactionMsg").innerHTML = intMsg;
+  
+  let meansHtml = `<table style="width:100%; border-collapse:collapse; text-align:center;"><tr style="background:#f1f5f9;"><th></th>${bLevs.map(l=>`<th>${l}</th>`).join('')}<th>Marginal A</th></tr>`;
+  for(let i=0;i<a;i++) meansHtml += `<tr><td style="font-weight:600; text-align:left">${aLevs[i]}</td>${cellM[i].map(m=>`<td style="text-align:center">${m.toFixed(2)}</td>`).join('')}<td style="font-weight:600; background:#e8f0fe; text-align:center">${margA[i].toFixed(2)}</td></tr>`;
+  meansHtml += `<tr><td style="font-weight:600; text-align:left">Marginal B</td>${margB.map(m=>`<td style="font-weight:600; background:#e8f0fe; text-align:center">${m.toFixed(2)}</td>`).join('')}<td style="text-align:center">—</th><tr></tbody></table>`;
+  document.getElementById("meansResults").innerHTML = meansHtml;
+  
+  let ciHtml = "", ciNotice = "";
+  if(intSig) {
+    document.getElementById("ciHeader").innerHTML = "🔀 Simple Effects (Post-hoc) — Conditional Comparisons After Significant Interaction";
+    let se = Math.sqrt(2*MSE/n), hw = tc*se;
+    ciNotice = `SE(diff) = √(2·MSE/n) = ${se.toFixed(4)}, margin of error = ±${hw.toFixed(4)}, t_crit = ${tc.toFixed(3)} (df = ${dfE})`;
+    
+    ciHtml += `<div class="ci-section-header">📌 SIMPLE EFFECTS: Comparing ${aName} levels within each fixed level of ${bName}</div>`;
+    ciHtml += `<div style="margin:0 0 0.5rem 0; font-size:0.75rem; color:#64748b;">Post-hoc analysis — comparing specific cells (e.g., "${aLevs[0]}" vs "${aLevs[1]}") only within the "${bLevs[0]}" condition</div>`;
+    for(let j=0;j<b;j++) {
+      ciHtml += `<div style="margin:0.8rem 0 0.3rem; font-size:0.8rem; font-weight:600; color:#667eea;">🔹 Within ${bName} = ${bLevs[j]}:</div>`;
+      for(let i1=0;i1<a;i1++) for(let i2=i1+1;i2<a;i2++) {
+        let d = cellM[i1][j] - cellM[i2][j];
+        let sig = (d-hw>0 || d+hw<0);
+        let cohenD = d / Math.sqrt(MSE);
+        let d_int = interpretCohenD(cohenD);
+        ciHtml += `<div class="ci-item"><span class="ci-label">${aLevs[i1]} vs ${aLevs[i2]} (at ${bName}=${bLevs[j]})</span><span class="ci-value">${d.toFixed(3)}</span><span class="ci-interval">(${(d-hw).toFixed(3)}, ${(d+hw).toFixed(3)})</span><span class="stat-badge ${sig?'stat-sig':'stat-ns'}">${sig?'Significant':'n.s.'}</span><span class="effect-size-badge ${d_int.class}">d=${cohenD.toFixed(2)} (${d_int.label})</span></div>`;
       }
     }
-    ciHtml+=`<div class="group-label" style="margin-top:16px">Factor B comparisons within each level of A</div>`;
-    for(let i=0;i<a;i++){
-      ciHtml+=`<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin:8px 0 4px">at ${Anames[i]}</div>`;
-      for(let j=0;j<b;j++) for(let k=j+1;k<b;k++){
-        let d=cellM[i][j]-cellM[i][k];
-        ciHtml+=ciRow(`${Bnames[j]} − ${Bnames[k]}`,d,d-mg,d+mg);
+    
+    ciHtml += `<div class="ci-section-header" style="margin-top:1.5rem;">📌 SIMPLE EFFECTS: Comparing ${bName} levels within each fixed level of ${aName}</div>`;
+    ciHtml += `<div style="margin:0 0 0.5rem 0; font-size:0.75rem; color:#64748b;">Post-hoc analysis — comparing specific cells (e.g., "${bLevs[0]}" vs "${bLevs[1]}") only within the "${aLevs[0]}" condition</div>`;
+    for(let i=0;i<a;i++) {
+      ciHtml += `<div style="margin:0.8rem 0 0.3rem; font-size:0.8rem; font-weight:600; color:#667eea;">🔹 Within ${aName} = ${aLevs[i]}:</div>`;
+      for(let j1=0;j1<b;j1++) for(let j2=j1+1;j2<b;j2++) {
+        let d = cellM[i][j1] - cellM[i][j2];
+        let sig = (d-hw>0 || d+hw<0);
+        let cohenD = d / Math.sqrt(MSE);
+        let d_int = interpretCohenD(cohenD);
+        ciHtml += `<div class="ci-item"><span class="ci-label">${bLevs[j1]} vs ${bLevs[j2]} (at ${aName}=${aLevs[i]})</span><span class="ci-value">${d.toFixed(3)}</span><span class="ci-interval">(${(d-hw).toFixed(3)}, ${(d+hw).toFixed(3)})</span><span class="stat-badge ${sig?'stat-sig':'stat-ns'}">${sig?'Significant':'n.s.'}</span><span class="effect-size-badge ${d_int.class}">d=${cohenD.toFixed(2)} (${d_int.label})</span></div>`;
       }
     }
   } else {
-    document.getElementById("ciHead").textContent="Marginal mean CIs — no significant interaction";
-    let seAd=Math.sqrt(2*MSE/(b*n)), mgA=tc*seAd;
-    let seBd=Math.sqrt(2*MSE/(a*n)), mgB=tc*seBd;
-    document.getElementById("ciInfo").innerHTML=
-      `Factor A: (ȳ<sub>i·</sub> − ȳ<sub>j·</sub>) ± t × √(2·MSE/(b·n)) &nbsp; SE = ${fmt(seAd,4)} | half-width = ±${fmt(mgA,4)}<br>
-       Factor B: (ȳ<sub>·i</sub> − ȳ<sub>·j</sub>) ± t × √(2·MSE/(a·n)) &nbsp; SE = ${fmt(seBd,4)} | half-width = ±${fmt(mgB,4)}`;
-
-    ciHtml+=`<div class="group-label">Factor A — pairwise marginal comparisons</div>`;
-    for(let i=0;i<a;i++) for(let k=i+1;k<a;k++){
-      let d=margA[i]-margA[k];
-      ciHtml+=ciRow(`${Anames[i]} − ${Anames[k]}`,d,d-mgA,d+mgA);
+    document.getElementById("ciHeader").innerHTML = "📏 Main Effect Comparisons — Marginal Means (No Significant Interaction)";
+    let seA = Math.sqrt(2*MSE/(b*n)), hwA = tc*seA;
+    let seB = Math.sqrt(2*MSE/(a*n)), hwB = tc*seB;
+    ciNotice = `${aName}: SE = ${seA.toFixed(4)}, margin of error = ±${hwA.toFixed(4)} | ${bName}: SE = ${seB.toFixed(4)}, margin of error = ±${hwB.toFixed(4)} | t = ${tc.toFixed(3)}`;
+    
+    ciHtml += `<div class="ci-section-header">📌 MAIN EFFECT OF ${aName.toUpperCase()}: Comparing marginal means (averaged across all levels of ${bName})</div>`;
+    ciHtml += `<div style="margin:0 0 0.5rem 0; font-size:0.75rem; color:#64748b;">Interpretation: Comparing the average of all groups in Factor A Level 1 vs Factor A Level 2, collapsing across Factor B (since no significant interaction).</div>`;
+    for(let i1=0;i1<a;i1++) for(let i2=i1+1;i2<a;i2++) {
+      let d = margA[i1] - margA[i2];
+      let sig = (d-hwA>0 || d+hwA<0);
+      let cohenD = d / Math.sqrt(MSE);
+      let d_int = interpretCohenD(cohenD);
+      ciHtml += `<div class="ci-item"><span class="ci-label">${aLevs[i1]} vs ${aLevs[i2]} (marginal means)</span><span class="ci-value">${d.toFixed(3)}</span><span class="ci-interval">(${(d-hwA).toFixed(3)}, ${(d+hwA).toFixed(3)})</span><span class="stat-badge ${sig?'stat-sig':'stat-ns'}">${sig?'Significant':'n.s.'}</span><span class="effect-size-badge ${d_int.class}">d=${cohenD.toFixed(2)} (${d_int.label})</span></div>`;
     }
-    ciHtml+=`<div class="group-label" style="margin-top:16px">Factor B — pairwise marginal comparisons</div>`;
-    for(let j=0;j<b;j++) for(let k=j+1;k<b;k++){
-      let d=margB[j]-margB[k];
-      ciHtml+=ciRow(`${Bnames[j]} − ${Bnames[k]}`,d,d-mgB,d+mgB);
+    
+    ciHtml += `<div class="ci-section-header" style="margin-top:1.5rem;">📌 MAIN EFFECT OF ${bName.toUpperCase()}: Comparing marginal means (averaged across all levels of ${aName})</div>`;
+    ciHtml += `<div style="margin:0 0 0.5rem 0; font-size:0.75rem; color:#64748b;">Interpretation: Comparing the average of all groups in Factor B Level 1 vs Factor B Level 2, collapsing across Factor A (since no significant interaction).</div>`;
+    for(let j1=0;j1<b;j1++) for(let j2=j1+1;j2<b;j2++) {
+      let d = margB[j1] - margB[j2];
+      let sig = (d-hwB>0 || d+hwB<0);
+      let cohenD = d / Math.sqrt(MSE);
+      let d_int = interpretCohenD(cohenD);
+      ciHtml += `<div class="ci-item"><span class="ci-label">${bLevs[j1]} vs ${bLevs[j2]} (marginal means)</span><span class="ci-value">${d.toFixed(3)}</span><span class="ci-interval">(${(d-hwB).toFixed(3)}, ${(d+hwB).toFixed(3)})</span><span class="stat-badge ${sig?'stat-sig':'stat-ns'}">${sig?'Significant':'n.s.'}</span><span class="effect-size-badge ${d_int.class}">d=${cohenD.toFixed(2)} (${d_int.label})</span></div>`;
     }
   }
-
-  document.getElementById("ciOut").innerHTML=ciHtml;
-  document.getElementById("results").style.display="block";
-  document.getElementById("placeholder").style.display="none";
+  document.getElementById("ciNotice").innerHTML = ciNotice;
+  document.getElementById("ciResults").innerHTML = ciHtml;
+  
+  let interpretation = `<strong>📖 Interpreting Confidence Intervals:</strong><br><br>
+  A confidence interval provides a range of plausible values for the true difference between population means. 
+  We are 95% confident that the true difference falls within the interval shown.<br><br>
+  <strong>• If the interval does NOT contain zero (labeled "sig"):</strong> There is a statistically significant difference between the groups at α = 0.05.<br>
+  <strong>• If the interval contains zero (labeled "n.s."):</strong> The difference is not statistically significant — we cannot rule out that the true difference is zero.<br><br>
+  <strong>Main Effects (No Interaction):</strong> Comparing marginal means — averages collapsed across the other factor. Example: "Main effect of Factor A compares Level 1 vs Level 2 across all levels of Factor B."<br><br>
+  <strong>Simple Effects / Post-hoc (Significant Interaction):</strong> Comparing specific cell means while holding the other factor constant. Example: "Comparing A1 vs A2 only within B1 condition." This is necessary when interaction is present because the effect of one factor depends on the level of the other.`;
+  
+  let effectSizeText = `<strong>📊 Interpreting Effect Sizes:</strong><br><br>
+  
+  <strong>Partial Eta Squared (η²ₚ) — Formula:</strong>
+  <div class="formula-box">η²ₚ = SS_effect / (SS_effect + SS_error)</div>
+  Where SS_effect is the sum of squares for the factor (A, B, or A×B), and SS_error is the error sum of squares.<br>
+  This represents the proportion of variance in the dependent variable explained by that specific effect, after accounting for other effects.<br><br>
+  
+  <strong>Cohen's d — Formula (for pairwise comparisons):</strong>
+  <div class="formula-box">d = (M₁ - M₂) / √(MS_error)</div>
+  Where M₁ and M₂ are the two means being compared, and MS_error is the mean square error from the ANOVA.<br>
+  Cohen's d expresses the mean difference in standard deviation units.<br><br>
+  
+  <strong>Interpretation Guidelines:</strong><br>
+  <strong>Partial Eta Squared (η²ₚ):</strong><br>
+  • <strong>Small:</strong> η²ₚ ≈ 0.01 (explains ~1% of variance)<br>
+  • <strong>Medium:</strong> η²ₚ ≈ 0.06 (explains ~6% of variance)<br>
+  • <strong>Large:</strong> η²ₚ ≈ 0.14 (explains ~14% or more of variance)<br><br>
+  
+  <strong>Cohen's d:</strong><br>
+  • <strong>Small:</strong> d ≈ 0.2 (difference of 0.2 standard deviations)<br>
+  • <strong>Medium:</strong> d ≈ 0.5 (difference of 0.5 SD — visible to naked eye)<br>
+  • <strong>Large:</strong> d ≈ 0.8 (difference of 0.8 SD — substantial practical significance)<br><br>
+  
+  <strong>Why effect sizes matter:</strong> Statistical significance (p < 0.05) tells you if an effect exists, but effect size tells you how large and practically meaningful that effect is. A large sample can make a tiny, unimportant effect statistically significant — effect sizes help distinguish meaningful findings from trivial ones.`;
+  
+  document.getElementById("ciInterpretation").innerHTML = interpretation;
+  document.getElementById("effectSizeInterpretation").innerHTML = effectSizeText;
+  
+  document.getElementById("resultsPanel").style.display = "block";
+  document.getElementById("resultsPanel").scrollIntoView({behavior:"smooth"});
 }
 
-buildTable();
+// Mode switching
+document.querySelectorAll(".mode-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".mode-content").forEach(c => c.classList.remove("active-mode"));
+    document.getElementById(`mode-${btn.dataset.mode}`).classList.add("active-mode");
+    document.getElementById("resultsPanel").style.display = "none";
+  });
+});
+
+// Run examples
+document.getElementById("runNoIntBtn").onclick = () => {
+  renderExampleTable("exampleNoIntData", noIntData.aName, noIntData.bName, noIntData.aLevs, noIntData.bLevs, noIntData.data, noIntData.n);
+  setTimeout(() => runANOVA(noIntData.aName, noIntData.bName, noIntData.aLevs, noIntData.bLevs, noIntData.n, noIntData.data), 50);
+};
+document.getElementById("runIntBtn").onclick = () => {
+  renderExampleTable("exampleIntData", intData.aName, intData.bName, intData.aLevs, intData.bLevs, intData.data, intData.n);
+  setTimeout(() => runANOVA(intData.aName, intData.bName, intData.aLevs, intData.bLevs, intData.n, intData.data), 50);
+};
+
+// Custom mode handlers
+document.getElementById("addCustomA").onclick = () => {
+  if(customALevels.length < 6) {
+    customALevels.push(`Level ${customALevels.length+1}`);
+    initCustomData();
+    renderCustomLevels();
+    renderCustomDataTable();
+  }
+};
+document.getElementById("addCustomB").onclick = () => {
+  if(customBLevels.length < 6) {
+    customBLevels.push(`Level ${customBLevels.length+1}`);
+    initCustomData();
+    renderCustomLevels();
+    renderCustomDataTable();
+  }
+};
+document.getElementById("runCustomBtn").onclick = () => {
+  let aName = document.getElementById("factorAName").value || "Factor A";
+  let bName = document.getElementById("factorBName").value || "Factor B";
+  customN = parseInt(document.getElementById("customNRep").value) || 3;
+  runANOVA(aName, bName, customALevels, customBLevels, customN, customData3D);
+};
+document.getElementById("resetCustomBtn").onclick = () => {
+  customALevels = ["Low", "High"];
+  customBLevels = ["Control", "Treated"];
+  customN = 3;
+  document.getElementById("factorAName").value = "Treatment";
+  document.getElementById("factorBName").value = "Environment";
+  document.getElementById("customNRep").value = 3;
+  initCustomData();
+  renderCustomLevels();
+  renderCustomDataTable();
+  document.getElementById("resultsPanel").style.display = "none";
+};
+
+// Initialize
+renderExampleTable("exampleNoIntData", noIntData.aName, noIntData.bName, noIntData.aLevs, noIntData.bLevs, noIntData.data, noIntData.n);
+renderExampleTable("exampleIntData", intData.aName, intData.bName, noIntData.aLevs, noIntData.bLevs, intData.data, intData.n);
+initCustomData();
+renderCustomLevels();
+renderCustomDataTable();
 </script>
 </body>
 </html>
